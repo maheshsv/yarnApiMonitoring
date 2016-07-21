@@ -46,7 +46,7 @@ public class Main {
 			BufferedWriter bufferedWriter = null;
 			if (writeFile != null && (writeFile.equals("y") || writeFile.equals("yes"))) {
 				Files.createDirectories(dir);
-				path = Paths.get(dirString + "/" + cluster_name + "-yarn-" + simpleDateFormat.format(new Date(Calendar.getInstance().getTimeInMillis())));
+				path = Paths.get(dirString + "/" + cluster_name + "-yarn-" + simpleDateFormat.format(new Date(Calendar.getInstance().getTimeInMillis())) + ".json");
 				bufferedWriter = Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 			} else {
 				Class.forName("org.postgresql.Driver");
