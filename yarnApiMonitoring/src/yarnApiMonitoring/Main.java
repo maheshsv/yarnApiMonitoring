@@ -41,10 +41,12 @@ public class Main {
 			Statement statement = null;
 			Connection connection = null;
 			Path path = null;
+			String dirString = "metrics/yarn/" + simpleDateFormatDate.format(new Date(Calendar.getInstance().getTimeInMillis()));
+			Path dir = Paths.get(dirString);
 			BufferedWriter bufferedWriter = null;
-			
 			if (writeFile != null && (writeFile.equals("y") || writeFile.equals("yes"))) {
-				path = Paths.get("yarnMonitoring_" + cluster_name + "_" + simpleDateFormat.format(new Date(Calendar.getInstance().getTimeInMillis())));
+				Files.createDirectories(dir);
+				path = Paths.get(dirString + "/" + cluster_name + "-yarn-" + simpleDateFormat.format(new Date(Calendar.getInstance().getTimeInMillis())));
 				bufferedWriter = Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 			} else {
 				Class.forName("org.postgresql.Driver");
@@ -128,6 +130,7 @@ public class Main {
 	
 	final static ObjectMapper mapper = new ObjectMapper();
 	static ArrayList<String> arrayListApps = new ArrayList<>();
-	final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm");
+	final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+	final static SimpleDateFormat simpleDateFormatDate = new SimpleDateFormat("yyyy-MM-dd");
 	
 }
