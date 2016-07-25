@@ -75,45 +75,42 @@ public class Main {
 			ArrayNode jsonArray = (ArrayNode) jsonNode.at("/apps/app");
 			Iterator<JsonNode> appsIterator = jsonArray.elements();
 			JsonNode jsonNodeCurrent = null;
+			ArrayNode jsonArrayOutput = mapper.createArrayNode();
+			String sql = null;
 			
 			while (appsIterator.hasNext()) {
 				jsonNodeCurrent = appsIterator.next();
 				if (jsonNodeCurrent.get("state").asText().equals("FINISHED")) {
-					//System.out.println(jsonNodeCurrent.get("id") + " FINISHED");
+
 				} else if (jsonNodeCurrent.get("state").asText().equals("FAILED")) {
 					
 				} else if (jsonNodeCurrent.get("state").asText().equals("KILLED")) {
 					
 				} else {
-					System.out.println(jsonNodeCurrent.get("id") + " " + jsonNodeCurrent.get("state"));
-					arrayListApps.add(jsonNodeCurrent.get("id").asText());
+					System.out.println(jsonNodeCurrent);
+					if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
+						jsonArrayOutput.add(jsonNodeCurrent);
+						System.out.println(jsonArrayOutput.size());
+					} else {
+						sql = "INSERT INTO yarn_apps_monitoring VALUES('" + jsonNodeCurrent.get("id").asText() + "', '" +
+								jsonNodeCurrent.get("state") + "', '" + jsonNodeCurrent.get("user").asText() + "', '" + jsonNodeCurrent.get("name").asText() + "', '" +
+								jsonNodeCurrent.get("queue").asText() + "', " + jsonNodeCurrent.get("progress").asDouble() + ", '" +
+								jsonNodeCurrent.get("applicationType").asText() + "', " + jsonNodeCurrent.get("startedTime").asLong() + ", " +
+								jsonNodeCurrent.get("allocatedMB").asLong() + ", " + jsonNodeCurrent.get("allocatedVCores").asLong() + ", " +
+								jsonNodeCurrent.get("runningContainers").asLong() + ", " + c_session + ")";
+								//System.out.println(sql);
+								statement.executeUpdate(sql);
+					}
 				}
 			}
-			String sql = null;
-			for (String apps : arrayListApps) {
-				httpGet = new HttpGet("http://" + YARN_URL + "/ws/v1/cluster/apps/" + apps);
-				httpGet.addHeader("Accept", "application/json");
-				httpResponse = httpClient.execute(httpGet);
-				responseEntity = httpResponse.getEntity();
-				responseString = EntityUtils.toString(responseEntity, "UTF-8");
-				jsonNode = mapper.readTree(responseString);
-				jsonNodeCurrent = jsonNode.at("/app");
-				if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
-					bufferedWriter.write(responseString);
-					bufferedWriter.newLine();
-				} else {
-					sql = "INSERT INTO yarn_apps_monitoring VALUES('" + jsonNodeCurrent.get("id").asText() + "', '" +
-					jsonNodeCurrent.get("state") + "', '" + jsonNodeCurrent.get("user").asText() + "', '" + jsonNodeCurrent.get("name").asText() + "', '" +
-					jsonNodeCurrent.get("queue").asText() + "', " + jsonNodeCurrent.get("progress").asDouble() + ", '" +
-					jsonNodeCurrent.get("applicationType").asText() + "', " + jsonNodeCurrent.get("startedTime").asLong() + ", " +
-					jsonNodeCurrent.get("allocatedMB").asLong() + ", " + jsonNodeCurrent.get("allocatedVCores").asLong() + ", " +
-					jsonNodeCurrent.get("runningContainers").asLong() + ", " + c_session + ")";
-					//System.out.println(sql);
-					statement.executeUpdate(sql);
-				}
+			
+			if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
+				mapper.writeValue(bufferedWriter, jsonArrayOutput);
+			} else {
+				
 			}
 			if (bufferedWriter != null) {
-				bufferedWriter.flush();
+				//bufferedWriter.flush();
 				bufferedWriter.close();
 			}
 			if (statement != null) {
