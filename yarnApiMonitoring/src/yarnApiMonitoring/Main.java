@@ -126,11 +126,15 @@ public class Main {
 			if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
 				mapper.writeValue(bufferedWriter, jsonArrayOutput);
 				
-				if (connection_derby != null) {
-					connection_derby.close();
-				}
+				
 			} else {
 				
+			}
+			if (statement_derby != null) {
+				statement_derby.close();
+			}
+			if (connection_derby != null) {
+				connection_derby.close();
 			}
 			if (bufferedWriter != null) {
 				//bufferedWriter.flush();
