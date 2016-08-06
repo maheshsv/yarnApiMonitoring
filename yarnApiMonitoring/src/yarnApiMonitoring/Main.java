@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,6 +41,8 @@ public class Main {
 			long c_session = 0;
 			Statement statement = null;
 			Connection connection = null;
+			Statement statement_derby = null;
+			Connection connection_derby = null;
 			Path path = null;
 			String dirString = "metrics/yarn/" + simpleDateFormatDate.format(new Date(Calendar.getInstance().getTimeInMillis()));
 			Path dir = Paths.get(dirString);
@@ -48,6 +51,21 @@ public class Main {
 				Files.createDirectories(dir);
 				path = Paths.get(dirString + "/" + cluster_name + "-yarn-" + simpleDateFormat.format(new Date(Calendar.getInstance().getTimeInMillis())) + ".json");
 				bufferedWriter = Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+				String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+				Class.forName(driver).newInstance();
+				String protocol = "jdbc:derby:";
+				connection_derby = DriverManager.getConnection(protocol + "derbyDB;create=true");
+				statement_derby = connection_derby.createStatement();
+				try {
+					statement_derby.executeQuery("CREATE TABLE application(c_applicationid VARCHAR, c_status SMALLINT)");
+				} catch (SQLException e) {
+					if (tableAlreadyExists(e)) {
+						System.out.println(e);
+					} else {
+						throw e;
+					}
+				}
+				
 			} else {
 				Class.forName("org.postgresql.Driver");
 				connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":5432/test", postgres_user, postgres_password);
@@ -66,7 +84,7 @@ public class Main {
 			}
 			
 			HttpClient httpClient = HttpClientBuilder.create().build();
-			HttpGet httpGet = new HttpGet("http://" + YARN_URL + "/ws/v1/cluster/apps");
+			HttpGet httpGet = new HttpGet("http://" + YARN_URL + "/ws/v1/cluster/apps?states=accepted,running,new");
 			httpGet.addHeader("Accept", "application/json");
 			HttpResponse httpResponse = httpClient.execute(httpGet);
 			HttpEntity responseEntity = httpResponse.getEntity();
@@ -104,8 +122,13 @@ public class Main {
 				}
 			}
 			
+			
 			if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
 				mapper.writeValue(bufferedWriter, jsonArrayOutput);
+				
+				if (connection_derby != null) {
+					connection_derby.close();
+				}
 			} else {
 				
 			}
@@ -124,6 +147,16 @@ public class Main {
 			System.out.println(1);
 		}
 	}
+	
+    public static boolean tableAlreadyExists(SQLException e) {
+        boolean exists;
+        if(e.getSQLState().equals("X0Y32")) {
+            exists = true;
+        } else {
+            exists = false;
+        }
+        return exists;
+    }
 	
 	final static ObjectMapper mapper = new ObjectMapper();
 	static ArrayList<String> arrayListApps = new ArrayList<>();

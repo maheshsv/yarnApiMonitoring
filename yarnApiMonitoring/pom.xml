@@ -61,7 +61,12 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
     <version>1.9</version>
-</dependency>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+    <version>10.12.1.1</version>
+  </dependency>
 </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -82,7 +87,7 @@
 			  <archive>
 				<manifest>
 					<addClasspath>true</addClasspath>
-					<mainClass>hdfsApiMonitoring.Main</mainClass>
+					<mainClass>yarnApiMonitoring.Main</mainClass>
 				</manifest>
 			  </archive>
 			<descriptorRefs>
