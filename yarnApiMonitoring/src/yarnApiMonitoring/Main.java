@@ -57,10 +57,10 @@ public class Main {
 				connection_derby = DriverManager.getConnection(protocol + "derbyDB;create=true");
 				statement_derby = connection_derby.createStatement();
 				try {
-					statement_derby.executeQuery("CREATE TABLE application(c_applicationid VARCHAR, c_status SMALLINT)");
+					statement_derby.executeUpdate("CREATE TABLE application(c_applicationid VARCHAR(150), c_status SMALLINT, c_timestamp TIMESTAMP default current_timestamp)");
 				} catch (SQLException e) {
 					if (tableAlreadyExists(e)) {
-						System.out.println(e);
+
 					} else {
 						throw e;
 					}
@@ -84,12 +84,13 @@ public class Main {
 			}
 			
 			HttpClient httpClient = HttpClientBuilder.create().build();
-			HttpGet httpGet = new HttpGet("http://" + YARN_URL + "/ws/v1/cluster/apps?states=accepted,running,new");
+			HttpGet httpGet = new HttpGet("http://" + YARN_URL + "/ws/v1/cluster/apps");
 			httpGet.addHeader("Accept", "application/json");
 			HttpResponse httpResponse = httpClient.execute(httpGet);
 			HttpEntity responseEntity = httpResponse.getEntity();
 			String responseString = EntityUtils.toString(responseEntity, "UTF-8");
 			JsonNode jsonNode = mapper.readTree(responseString);
+			System.out.println(responseString);
 			ArrayNode jsonArray = (ArrayNode) jsonNode.at("/apps/app");
 			Iterator<JsonNode> appsIterator = jsonArray.elements();
 			JsonNode jsonNodeCurrent = null;
@@ -98,12 +99,16 @@ public class Main {
 			
 			while (appsIterator.hasNext()) {
 				jsonNodeCurrent = appsIterator.next();
-				if (jsonNodeCurrent.get("state").asText().equals("FINISHED")) {
-
-				} else if (jsonNodeCurrent.get("state").asText().equals("FAILED")) {
-					
-				} else if (jsonNodeCurrent.get("state").asText().equals("KILLED")) {
-					
+				if (jsonNodeCurrent.get("state").asText().equals("FINISHED") || jsonNodeCurrent.get("state").asText().equals("FAILED") || (jsonNodeCurrent.get("state").asText().equals("KILLED"))) {
+					if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
+						ResultSet resultSet_derby = statement_derby.executeQuery("SELECT 1 FROM application WHERE c_applicationid = '" + jsonNodeCurrent.get("id").asText() + "'");
+						if (resultSet_derby.next()) {
+							jsonArrayOutput.add(jsonNodeCurrent);
+							System.out.println(jsonArrayOutput.size());
+							statement_derby.executeUpdate("DELETE FROM application WHERE c_applicationid = '" + jsonNodeCurrent.get("id").asText() + "'");
+						}
+						resultSet_derby.close();
+					}
 				} else {
 					System.out.println(jsonNodeCurrent);
 					if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
@@ -148,7 +153,7 @@ public class Main {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println(1);
+			System.exit(1);
 		}
 	}
 	
