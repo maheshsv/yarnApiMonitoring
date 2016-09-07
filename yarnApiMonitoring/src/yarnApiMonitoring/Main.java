@@ -115,7 +115,7 @@ public class Main {
 							
 						} else {
 							sql = "INSERT INTO yarn_apps_monitoring VALUES('" + jsonNodeCurrent.get("id").asText() + "', '" +
-									jsonNodeCurrent.get("state") + "', '" + jsonNodeCurrent.get("user").asText() + "', '" + jsonNodeCurrent.get("name").asText() + "', '" +
+									jsonNodeCurrent.get("state").asText() + "', '" + jsonNodeCurrent.get("user").asText() + "', '" + jsonNodeCurrent.get("name").asText() + "', '" +
 									jsonNodeCurrent.get("queue").asText() + "', " + jsonNodeCurrent.get("progress").asDouble() + ", '" +
 									jsonNodeCurrent.get("applicationType").asText() + "', " + jsonNodeCurrent.get("startedTime").asLong() + ", " +
 									jsonNodeCurrent.get("allocatedMB").asLong() + ", " + jsonNodeCurrent.get("allocatedVCores").asLong() + ", " +
@@ -131,7 +131,7 @@ public class Main {
 						System.out.println(jsonArrayOutput.size());
 					} else {
 						sql = "INSERT INTO yarn_apps_monitoring VALUES('" + jsonNodeCurrent.get("id").asText() + "', '" +
-								jsonNodeCurrent.get("state") + "', '" + jsonNodeCurrent.get("user").asText() + "', '" + jsonNodeCurrent.get("name").asText() + "', '" +
+								jsonNodeCurrent.get("state").asText() + "', '" + jsonNodeCurrent.get("user").asText() + "', '" + jsonNodeCurrent.get("name").asText() + "', '" +
 								jsonNodeCurrent.get("queue").asText() + "', " + jsonNodeCurrent.get("progress").asDouble() + ", '" +
 								jsonNodeCurrent.get("applicationType").asText() + "', " + jsonNodeCurrent.get("startedTime").asLong() + ", " +
 								jsonNodeCurrent.get("allocatedMB").asLong() + ", " + jsonNodeCurrent.get("allocatedVCores").asLong() + ", " +
