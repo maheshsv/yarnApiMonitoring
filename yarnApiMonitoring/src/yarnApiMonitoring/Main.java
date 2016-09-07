@@ -90,7 +90,7 @@ public class Main {
 			HttpEntity responseEntity = httpResponse.getEntity();
 			String responseString = EntityUtils.toString(responseEntity, "UTF-8");
 			JsonNode jsonNode = mapper.readTree(responseString);
-			System.out.println(responseString);
+			//System.out.println(responseString);
 			ArrayNode jsonArray = (ArrayNode) jsonNode.at("/apps/app");
 			Iterator<JsonNode> appsIterator = jsonArray.elements();
 			JsonNode jsonNodeCurrent = null;
@@ -104,13 +104,28 @@ public class Main {
 						ResultSet resultSet_derby = statement_derby.executeQuery("SELECT 1 FROM application WHERE c_applicationid = '" + jsonNodeCurrent.get("id").asText() + "'");
 						if (resultSet_derby.next()) {
 							jsonArrayOutput.add(jsonNodeCurrent);
-							System.out.println(jsonArrayOutput.size());
+							//System.out.println(jsonArrayOutput.size());
 							statement_derby.executeUpdate("DELETE FROM application WHERE c_applicationid = '" + jsonNodeCurrent.get("id").asText() + "'");
 						}
 						resultSet_derby.close();
+					} else {
+						sql = "SELECT 1 FROM yarn_apps_monitoring WHERE c_application_id = '" + jsonNodeCurrent.get("id").asText() + "' AND c_state IN ('FINISHED', 'FAILED', 'KILLED')";
+						ResultSet resultSet = statement.executeQuery(sql);
+						if (resultSet.next()) {
+							
+						} else {
+							sql = "INSERT INTO yarn_apps_monitoring VALUES('" + jsonNodeCurrent.get("id").asText() + "', '" +
+									jsonNodeCurrent.get("state") + "', '" + jsonNodeCurrent.get("user").asText() + "', '" + jsonNodeCurrent.get("name").asText() + "', '" +
+									jsonNodeCurrent.get("queue").asText() + "', " + jsonNodeCurrent.get("progress").asDouble() + ", '" +
+									jsonNodeCurrent.get("applicationType").asText() + "', " + jsonNodeCurrent.get("startedTime").asLong() + ", " +
+									jsonNodeCurrent.get("allocatedMB").asLong() + ", " + jsonNodeCurrent.get("allocatedVCores").asLong() + ", " +
+									jsonNodeCurrent.get("runningContainers").asLong() + ", " + c_session + ")";
+							//System.out.println(sql);
+							statement.executeUpdate(sql);
+						}
 					}
 				} else {
-					System.out.println(jsonNodeCurrent);
+					//System.out.println(jsonNodeCurrent);
 					if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
 						jsonArrayOutput.add(jsonNodeCurrent);
 						System.out.println(jsonArrayOutput.size());
@@ -121,17 +136,14 @@ public class Main {
 								jsonNodeCurrent.get("applicationType").asText() + "', " + jsonNodeCurrent.get("startedTime").asLong() + ", " +
 								jsonNodeCurrent.get("allocatedMB").asLong() + ", " + jsonNodeCurrent.get("allocatedVCores").asLong() + ", " +
 								jsonNodeCurrent.get("runningContainers").asLong() + ", " + c_session + ")";
-								//System.out.println(sql);
-								statement.executeUpdate(sql);
+						//System.out.println(sql);
+						statement.executeUpdate(sql);
 					}
 				}
 			}
 			
-			
 			if (writeFile != null && writeFile.equals("y") || writeFile.equals("yes")) {
 				mapper.writeValue(bufferedWriter, jsonArrayOutput);
-				
-				
 			} else {
 				
 			}
