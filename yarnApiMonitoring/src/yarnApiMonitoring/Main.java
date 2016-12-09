@@ -35,6 +35,8 @@ public class Main {
 		String postgres_host = args[i++];
 		String postgres_user = args[i++];
 		String postgres_password = args[i++];
+		String postgres_port = args[i++];
+		String postgres_database = args[i++];
 		String cluster_name = args[i++];
 		String writeFile = args[i++];
 		try {
@@ -68,7 +70,7 @@ public class Main {
 				
 			} else {
 				Class.forName("org.postgresql.Driver");
-				connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":5432/test", postgres_user, postgres_password);
+				connection = DriverManager.getConnection("jdbc:postgresql://" + postgres_host + ":" + postgres_port + "/" + postgres_database, postgres_user, postgres_password);
 				statement = connection.createStatement();
 				statement.executeUpdate("CREATE TABLE IF NOT EXISTS yarn_apps_monitoring ( " +
 						"c_application_id text, c_state text, c_user text, name text, queue text, progress double precision, " +
